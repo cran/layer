@@ -4,30 +4,28 @@
 #'
 #' @param map_list sf or terra/stars/raster object.
 #' @param layer vector or list of names of each column in tilted sf object that should be used for coloring
-#' @param palette vector of palettes provided by the {viridis} and {scico} packages for rasters
+#' @param palette vector of palettes provided by the \link[viridis]{viridis} and \link[scico]{scico} packages for rasters
 #' @param color  a single color applied multiple times or a vector of color strings for points or linestrings
-#' @param direction vector of directions for {viridis} and {scico} color palettes
-#' @param begin vector of the of the start of interval the palette to sample colours from for {viridis} and {scico} color palettes
-#' @param end vector of the of the end of interval the palette to sample colours from for {viridis} and {scico} color palettes
-#' @param alpha vector of opacity for {viridis} and {scico} color palettes
+#' @param direction vector of directions for \link[viridis]{viridis} and \link[scico]{scico} color palettes
+#' @param begin vector of the of the start of interval the palette to sample colours from for \link[viridis]{viridis} and \link[scico]{scico} color palettes
+#' @param end vector of the of the end of interval the palette to sample colours from for \link[viridis]{viridis} and \link[scico]{scico} color palettes
+#' @param alpha vector of opacity for \link[viridis]{viridis} and \link[scico]{scico} color palettes
 #' 
 #'
-#' @return ggplot
-#' @importFrom ggplot2 ggplot geom_sf aes theme theme_void scale_fill_viridis_c aes_string scale_color_viridis_c
+#' @return A `ggplot` object with stacked maps.
 #' @importFrom sf st_geometry_type
-#' @import ggnewscale
 #' @export
 #' @examples
+#' \donttest{
 #' # tilt data
 #' tilt_landscape_1 <- tilt_map(landscape_1)
 #' tilt_landscape_2 <- tilt_map(landscape_2, x_shift = 50, y_shift = 50)
 #'
-#' # put in list
-#' map_list <- list(tilt_landscape_1, tilt_landscape_2)
-#'
 #' # plot
+#' map_list <- list(tilt_landscape_1, tilt_landscape_2)
 #' plot_tiltedmaps(map_list, palette = "turbo")
-
+#' }
+#' 
 plot_tiltedmaps <- function(map_list, layer = NA, palette = "viridis", color = "grey50", direction = 1, begin = 0, end = 1, alpha = 1) {
   
   ## checks ----
@@ -42,23 +40,22 @@ plot_tiltedmaps <- function(map_list, layer = NA, palette = "viridis", color = "
   if(length(palette) == 1) palette <- rep(palette, length(map_list))
   if(length(color) == 1) color <- rep(color, length(map_list))
   
-  #if(!palette %in% c("viridis", "inferno", "magma", "plasma", "cividis", "mako", "rocket", "turbo", letters[1:9], scico::scico_palette_names())) stop("palette should be a palette name from the {viridis} or {scico} package.")
-  
+  #if(!palette %in% c("viridis", "inferno", "magma", "plasma", "cividis", "mako", "rocket", "turbo", letters[1:9], scico::scico_palette_names())) stop("palette should be a palette name from the \link[viridis]{viridis} or \link[scico]{scico} package.")
   
   ## plot ----
-  map_tilt <- ggplot() +
-    geom_sf(
+  map_tilt <- ggplot2::ggplot() +
+    ggplot2::geom_sf(
       data = map_list[[1]],
-      aes_string(fill = layer[[1]],
+      ggplot2::aes_string(fill = layer[[1]],
                  color = layer[[1]]), size = 0.01
     ) +
     {
       if (palette[1] %in% c("viridis", "inferno", "magma", "plasma", "cividis", "mako", "rocket", "turbo", letters[1:9])) 
-        scale_fill_viridis_c(option = palette[1], direction = direction[1], begin = begin[1], end = end[1], alpha = alpha[1], guide = "none")
+        ggplot2::scale_fill_viridis_c(option = palette[1], direction = direction[1], begin = begin[1], end = end[1], alpha = alpha[1], guide = "none")
     } +
     {
       if (palette[1] %in% c("viridis", "inferno", "magma", "plasma", "cividis", "mako", "rocket", "turbo", letters[1:9])) 
-        scale_color_viridis_c(option = palette[1], direction = direction[1], begin = begin[1], end = end[1], alpha = alpha[1], guide = "none")
+        ggplot2::scale_color_viridis_c(option = palette[1], direction = direction[1], begin = begin[1], end = end[1], alpha = alpha[1], guide = "none")
     } +
     {
       if (palette[1] %in% scico::scico_palette_names()) 
@@ -69,24 +66,26 @@ plot_tiltedmaps <- function(map_list, layer = NA, palette = "viridis", color = "
         scico::scale_color_scico(palette = palette[1], direction = direction[1], begin = begin[1], end = end[1], alpha = alpha[1], guide = "none")
     }
   
+  
+  
   if(length(map_list) > 1) {
     for (i in seq_along(map_list)[-1]) {
       if(!is.na(layer[[i]])){
         map_tilt <- map_tilt +
           ggnewscale::new_scale_fill() +
           ggnewscale::new_scale_color()  +
-          geom_sf(
+          ggplot2::geom_sf(
             data = map_list[[i]],
-            aes_string(fill = layer[[i]],
+            ggplot2::aes_string(fill = layer[[i]],
                        color = layer[[i]]), size = .5
           ) +
           {
             if (palette[i] %in% c("viridis", "inferno", "magma", "plasma", "cividis", "mako", "rocket", "turbo", letters[1:9])) 
-              scale_fill_viridis_c(option = palette[i], direction = direction[i], begin = begin[i], end = end[i], alpha = alpha[i], guide = "none")
+              ggplot2::scale_fill_viridis_c(option = palette[i], direction = direction[i], begin = begin[i], end = end[i], alpha = alpha[i], guide = "none")
           } +
           {
             if (palette[i] %in% c("viridis", "inferno", "magma", "plasma", "cividis", "mako", "rocket", "turbo", letters[1:9])) 
-              scale_color_viridis_c(option = palette[i], direction = direction[i], begin = begin[i], end = end[i], alpha = alpha[i], guide = "none")
+              ggplot2::scale_color_viridis_c(option = palette[i], direction = direction[i], begin = begin[i], end = end[i], alpha = alpha[i], guide = "none")
           } +
           {
             if (palette[i] %in% scico::scico_palette_names()) 
@@ -98,8 +97,8 @@ plot_tiltedmaps <- function(map_list, layer = NA, palette = "viridis", color = "
           }     
       } else {
         map_tilt <- map_tilt +
-          geom_sf(
-            data = map_list[[i]],
+          ggplot2::geom_sf(
+            data  = map_list[[i]],
             color = color[i],
             alpha = alpha[i]
           )
@@ -108,5 +107,6 @@ plot_tiltedmaps <- function(map_list, layer = NA, palette = "viridis", color = "
   }
   
   map_tilt +
-    theme_void() 
+    ggplot2::theme_void() 
+
 }
